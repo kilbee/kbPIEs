@@ -3,7 +3,7 @@ custom PIE menus
 
 
 Quick Layout Switching with PIE menu
-Easily orginize your pie options with GUI preferences.
+Easily organize your PIE options with GUI preferences.
 
 Hotkey Setup in User Preferences -> Input -> Screen -> Screen (Global)
 
