@@ -158,6 +158,7 @@ def register():
     bpy.utils.register_class(SetScreenLayout)    
     bpy.utils.register_class(kbPIE_addon_preferences)
 
+    #hotkey setup
     #km =  bpy.context.window_manager.keyconfigs.addon.keymaps.new(name="Screen (Global)")
     #kmi = km.keymap_items.new("wm.call_menu_pie", "F", "PRESS")
     #kmi.properties.name="kbPIE_switch_layout"
@@ -170,7 +171,7 @@ def unregister():
 
 
 # needed only for testing when run directly from text block as script:
-if __name__ == "__main__":
-    register()
+#if __name__ == "__main__":
+#    register()
 
     bpy.ops.wm.call_menu_pie(name= "kbPIE_switch_layout")
