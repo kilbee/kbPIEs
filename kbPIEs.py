@@ -5,7 +5,7 @@ bl_info = {
     "blender": (2, 74, 1),
     "description": "Adds a PIE Menu for switching Screen Layouts",
     "warning": "",
-    "wiki_url": "http://github.com/kilbee/kbPIEs",
+    "wiki_url": "http://kilbeeu.wordpress.com",
     "category": "User Interface",
 }
 
@@ -52,36 +52,32 @@ class kbPIE_addon_preferences(bpy.types.AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
-        
-        layout.prop(context.scene, "Enable_Tab_01", text="Help", icon="QUESTION")
-        if context.scene.Enable_Tab_01:
-            row = layout.row()
-            layout.label(text="Fill options with EXISTING layout names.")
-            layout.label(text="To use option [Maximize Area] use this EXACT string [Maximize Area] without brackets.")
-            layout.separator()
-            layout.label(text="Hotkey Setup in User Preferences -> Input -> Screen -> Screen (Global)")
-            layout.label(text="Add New -> Identifier: [wm.call_menu_pie], name: [kbPIE_switch_layout]")
+
+        row = layout.row()
+        layout.label(text="Fill options with EXISTING layout names.")
+        layout.label(text="To use option [Maximize Area] use this EXACT string [Maximize Area] without brackets.")
+        layout.separator()
+        layout.label(text="Hotkey Setup in User Preferences -> Input -> Screen -> Screen (Global)")
+        layout.label(text="Add New -> Identifier: [wm.call_menu_pie], name: [kbPIE_switch_layout]")
             
         
-        layout.prop(context.scene, "Enable_Tab_02", text="Setup Layout Screens", icon="UI")   
-        if context.scene.Enable_Tab_02:
-            row = layout.row()
-            layout.separator()
-            layout.label(text="* Basic Cross options:")
-            layout.prop(self, "kbPIEoptionNum4")
-            layout.prop(self, "kbPIEoptionNum6")
-            layout.prop(self, "kbPIEoptionNum2")
-            layout.prop(self, "kbPIEoptionNum8")
-        
-            layout.separator()
-            layout.label(text="* Sidelong Cross Options:")
-            layout.prop(self, "kbPIEoptionNum7")
-            layout.prop(self, "kbPIEoptionNum9")
-            layout.prop(self, "kbPIEoptionNum1")
-            layout.prop(self, "kbPIEoptionNum3")
+        row = layout.row()
+        layout.separator()
+        layout.label(text="* Basic Cross options:")
+        layout.prop(self, "kbPIEoptionNum4")
+        layout.prop(self, "kbPIEoptionNum6")
+        layout.prop(self, "kbPIEoptionNum2")
+        layout.prop(self, "kbPIEoptionNum8")
         
         layout.separator()
-        layout.operator("wm.url_open", text="homepage & more info").url = "http://github.com/kilbee/kbPIEs"
+        layout.label(text="* Sidelong Cross Options:")
+        layout.prop(self, "kbPIEoptionNum7")
+        layout.prop(self, "kbPIEoptionNum9")
+        layout.prop(self, "kbPIEoptionNum1")
+        layout.prop(self, "kbPIEoptionNum3")
+        
+        layout.separator()
+        layout.operator("wm.url_open", text="homepage & more info").url = "http://kilbeeu.wordpress.com"
 
 
 
@@ -158,7 +154,7 @@ def register():
     bpy.utils.register_class(SetScreenLayout)    
     bpy.utils.register_class(kbPIE_addon_preferences)
 
-    #hotkey setup
+    # hotkey setup
     #km =  bpy.context.window_manager.keyconfigs.addon.keymaps.new(name="Screen (Global)")
     #kmi = km.keymap_items.new("wm.call_menu_pie", "F", "PRESS")
     #kmi.properties.name="kbPIE_switch_layout"
@@ -172,6 +168,6 @@ def unregister():
 
 # needed only for testing when run directly from text block as script:
 #if __name__ == "__main__":
-#    register()
+    #register()
 
-    bpy.ops.wm.call_menu_pie(name= "kbPIE_switch_layout")
+    #bpy.ops.wm.call_menu_pie(name= "kbPIE_switch_layout")
