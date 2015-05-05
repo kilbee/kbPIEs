@@ -15,4 +15,5 @@ How to use:
 
 https://github.com/kilbee/kbPIEs/wiki/INFO
 
-https://www.youtube.com/watch?v=3MShpWzvIAk
+
+[![youtube setup video instruction](https://i.ytimg.com/vi/3MShpWzvIAk/default.jpg?v=5548bff4)](https://www.youtube.com/watch?v=3MShpWzvIAk)
