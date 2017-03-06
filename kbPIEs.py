@@ -60,10 +60,6 @@ class KbPiesAddonPreferences(bpy.types.AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
-
-        row = layout.row()
-
-        layout.label("Fifth row")
         row = layout.row()
         
         #split = row.split(percentage=0.33)
@@ -78,6 +74,7 @@ class KbPiesAddonPreferences(bpy.types.AddonPreferences):
         split = row.split()
         col = split.column()
         col.operator_menu_enum('kbpies.select_screen', 'top', text='Top ({})'.format(self.kb_pie_screens_top))
+        col.separator()
         col.separator()
         col.separator()
         col.operator_menu_enum('kbpies.select_screen', 'bottom', text='Bottom ({})'.format(self.kb_pie_screens_bottom))
