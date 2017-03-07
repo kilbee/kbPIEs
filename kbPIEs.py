@@ -1,7 +1,7 @@
 bl_info = {
     "name": "kbPIEs",
     "author": "kilbeeu",
-    "version": (0, 2),
+    "version": (0, 3),
     "blender": (2, 78, 0),
     "description": "Adds a PIE Menu for switching Screen Layouts",
     "warning": "",
@@ -16,6 +16,11 @@ import rna_keymap_ui
 
 
 def avail_screens(self,context):
+    '''
+    enumerates available screen layouts and adding more items:
+    Maximize Area - will toggle current area to maximum window size
+    User Preferences - opens User Preferences window
+    '''
     screens = [     ('Maximize Area', 'Maximize Area', 'Maximizes current area'),
                     ('User Preferences', 'User Preferences', 'User Preferences')
                 ] # (identifier, name, description) optionally: (.., icon name, unique number)
@@ -25,18 +30,56 @@ def avail_screens(self,context):
     return screens
 
 
+addon_keymaps = [] # store hotkey items on addon level for quick referencel todo: actually move this to addon preferences to keep it clean
+
+
+def get_hotkey_entry_item(km, kmi_name, kmi_value):
+    '''
+    returns hotkey of specific type, with specific properties.name (keymap is not a dict, so referencing by keys is not enough
+    if there are multiple hotkeys!)
+    '''
+    for i, km_item in enumerate(km.keymap_items):
+        if km.keymap_items.keys()[i] == kmi_name:
+            if km.keymap_items[i].properties.name == kmi_value:
+                return km_item
+    return None # not needed, since no return means None, but keeping for readability
+
+
 def add_hotkey():
+    # reference: http://blender.stackexchange.com/a/1498/1610
     user_preferences = bpy.context.user_preferences
     addon_prefs = user_preferences.addons[__name__].preferences
     
-    kc = bpy.context.window_manager.keyconfigs.user
-    km = kc.keymaps['Screen']
-    kmi = km.keymap_items.new("wm.call_menu_pie", "NONE", "PRESS")
-    kmi.properties.name = "KbPiesSwitchLayout"
+    wm = bpy.context.window_manager
+    #kc = wm.keyconfigs.user      # for adding hotkeys independent from addon
+    #km = kc.keymaps['Screen']
+    kc = wm.keyconfigs.addon    # for hotkeys within an addon
+    km = kc.keymaps.new(name="Window", space_type='EMPTY', region_type='WINDOW')  # this will get appended to hotkeys screen section in input hotkeys UI
+
+    #kmi = get_hotkey_entry_item(km, 'wm.call_menu_pie', 'KbPiesSwitchLayout')   # query hotkeys for hotkey entry item with specific name...
+    #if kmi == None: # if want to add only one
+    kmi = km.keymap_items.new("wm.call_menu_pie", "NONE", "PRESS")          # ...and if not found then add it
+    kmi.properties.name = "KbPiesSwitchLayout"                              # also set proper name
     kmi.active = True
+    addon_keymaps.append((km, kmi)) # also append to global (addon level) hotkey list for easy management
+
+
+def remove_hotkey():
+    ''' clears all addon level keymap hotkeys stored in addon_keymaps '''
+    wm = bpy.context.window_manager
+    #kc = wm.keyconfigs.user
+    kc = wm.keyconfigs.addon
+    km = kc.keymaps['Window']
+    
+    for km, kmi in addon_keymaps:
+        km.keymap_items.remove(kmi)
+        wm.keyconfigs.addon.keymaps.remove(km)
+    addon_keymaps.clear()
+    
 
 
 def get_addon_preferences():
+    ''' quick wrapper for referencing addon preferences '''
     addon_preferences = bpy.context.user_preferences.addons[__name__].preferences
     return addon_preferences
 
@@ -45,7 +88,6 @@ def get_addon_preferences():
 
 class KbPiesAddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
-
 
     kb_pie_screens_top_left     = bpy.props.StringProperty( name="Top Left",     default="Maximize Area" )
     kb_pie_screens_top          = bpy.props.StringProperty( name="Top",          default="Maximize Area" )
@@ -60,30 +102,42 @@ class KbPiesAddonPreferences(bpy.types.AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
+        box = layout.box()
+        col = box.column()        
+        row = col.row()
+        row.label()
+        #row.label()
+        row.operator_menu_enum('kbpies.select_screen', 'top', text='Top ({})'.format(self.kb_pie_screens_top))
+        #row.label()
+        row.label()
         
-        #split = row.split(percentage=0.33)
-        split = row.split()
-        col = split.column()
-        col.operator_menu_enum('kbpies.select_screen', 'top_left', text='Top Left ({})'.format(self.kb_pie_screens_top_left))
-        col.operator_menu_enum('kbpies.select_screen', 'left', text='Left ({})'.format(self.kb_pie_screens_left))
-        col.operator_menu_enum('kbpies.select_screen', 'bottom_left', text='Bottom left ({})'.format(self.kb_pie_screens_bottom_left))
+        row = col.row()
+        row.label()
+        row.operator_menu_enum('kbpies.select_screen', 'top_left', text='Top Left ({})'.format(self.kb_pie_screens_top_left))
+        row.label()
+        row.operator_menu_enum('kbpies.select_screen', 'top_right', text='Top Right ({})'.format(self.kb_pie_screens_top_right))
+        row.label()
+
+        row = col.row()
+        row.operator_menu_enum('kbpies.select_screen', 'left', text='Left ({})'.format(self.kb_pie_screens_left))
+        row.label()
+        row.label()
+        row.operator_menu_enum('kbpies.select_screen', 'right', text='Right ({})'.format(self.kb_pie_screens_right))
+        
+        row = col.row()
+        row.label()
+        row.operator_menu_enum('kbpies.select_screen', 'bottom_left', text='Bottom left ({})'.format(self.kb_pie_screens_bottom_left))
+        row.label()
+        row.operator_menu_enum('kbpies.select_screen', 'bottom_right', text='Bottom Right ({})'.format(self.kb_pie_screens_bottom_right))
+        row.label()
         
         
-        #split = split.split(percentage=0.66)
-        split = row.split()
-        col = split.column()
-        col.operator_menu_enum('kbpies.select_screen', 'top', text='Top ({})'.format(self.kb_pie_screens_top))
-        col.separator()
-        col.separator()
-        col.separator()
-        col.operator_menu_enum('kbpies.select_screen', 'bottom', text='Bottom ({})'.format(self.kb_pie_screens_bottom))
-        
-        split = row.split()
-        col = split.column()
-        col.operator_menu_enum('kbpies.select_screen', 'top_right', text='Top Right ({})'.format(self.kb_pie_screens_top_right))
-        col.operator_menu_enum('kbpies.select_screen', 'right', text='Right ({})'.format(self.kb_pie_screens_right))
-        col.operator_menu_enum('kbpies.select_screen', 'bottom_right', text='Bottom Right ({})'.format(self.kb_pie_screens_bottom_right))
+        row = col.row()
+        row.label()
+        #row.label()
+        row.operator_menu_enum('kbpies.select_screen', 'bottom', text='Bottom ({})'.format(self.kb_pie_screens_bottom))
+        #row.label()
+        row.label()
         
         
 
@@ -94,15 +148,14 @@ class KbPiesAddonPreferences(bpy.types.AddonPreferences):
         col.label('Setup Hotkey')
         col.separator()
         wm = bpy.context.window_manager
-        kc = wm.keyconfigs.user
-        km = kc.keymaps['Screen']
-        if 'wm.call_menu_pie' in km.keymap_items.keys():
-            kmi = km.keymap_items["wm.call_menu_pie"]
-            #km = km.active()
+        kc = wm.keyconfigs.user #need to reference the actual keyconfig, ( referencing kc = wm.keyconfigs.addon won't be saved across sessions)
+        km = kc.keymaps['Window']
+        kmi = get_hotkey_entry_item(km, 'wm.call_menu_pie', 'KbPiesSwitchLayout')
+        if kmi:
             col.context_pointer_set("keymap", km)
             rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
             col.separator()
-            col.label(text="Hotkey also listed in User Preferences -> Input -> Screen -> Screen (Global)")
+            col.label(text="Hotkey also listed in User Preferences -> Input -> Window")
         else:
             col.label("No hotkey entry found")
             col.operator(KbPiesAddHotkey.bl_idname, text = "Add hotkey entry", icon = 'ZOOMIN')
@@ -117,15 +170,16 @@ class KbPiesAddonPreferences(bpy.types.AddonPreferences):
 
         
         
-
+def test(self, context=None):
+    print("ssss")
 
 class KbPiesSelectScreen(bpy.types.Operator):
-    ''' set screen layout to corresponding pie position '''
+    ''' Set screen layout to corresponding pie position '''
     bl_idname = "kbpies.select_screen"
     bl_label = "Select screen"
     num =  bpy.props.IntProperty()
 
-    top_left    = bpy.props.EnumProperty( name = "Top Left",    items = avail_screens)
+    top_left    = bpy.props.EnumProperty( name = "Top Left",    items = avail_screens, update=test)
     left        = bpy.props.EnumProperty( name = "Left",        items = avail_screens)
     bottom_left = bpy.props.EnumProperty( name = "Bottom Left", items = avail_screens)
 
@@ -189,7 +243,7 @@ class KbPiesSwitchLayout(bpy.types.Menu):
 
 
 class KbPiesSetScreenLayout(bpy.types.Operator):
-    ''' change screen layout '''
+    ''' Change screen layout '''
     bl_idname="screen.set_layout"
     bl_label="Switch to Screen Layout"
     layoutName=bpy.props.StringProperty()   
@@ -218,7 +272,7 @@ class KbPiesSetScreenLayout(bpy.types.Operator):
 
 
 class KbPiesAddHotkey(bpy.types.Operator):
-    ''' add hotkey entry '''
+    ''' Add hotkey entry '''
     bl_idname = "kbpies.add_hotkey"
     bl_label = "Addon Preferences Example"
     bl_options = {'REGISTER', 'INTERNAL'}
@@ -246,11 +300,7 @@ def register():
     
 
     # hotkey setup
-    # http://blender.stackexchange.com/a/1498/1610
-    kc = bpy.context.window_manager.keyconfigs.user
-    if 'Screen' in kc.keymaps.keys():
-        #bpy.ops.kbpies.add_hotkey('EXEC_DEFAULT') 
-        add_hotkey()
+    add_hotkey()
 
 
 
@@ -264,9 +314,5 @@ def unregister():
     bpy.utils.unregister_class(KbPiesAddHotkey)
 
     # hotkey cleanup
-    # kc = bpy.context.window_manager.keyconfigs.user
-    # km = kc.keymaps['Screen']
-    # if 'wm.call_menu_pie' in km.keymap_items.keys():
-    #     kmi = km.keymap_items["wm.call_menu_pie"]
-    #     km.keymap_items.remove(kmi)
+    remove_hotkey()
 
