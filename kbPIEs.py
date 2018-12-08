@@ -1,8 +1,8 @@
 bl_info = {
     "name": "kbPIEs",
     "author": "kilbeeu",
-    "version": (0, 3),
-    "blender": (2, 78, 0),
+    "version": (0, 4),
+    "blender": (2, 80, 0),
     "description": "Adds a PIE Menu for switching Screen Layouts",
     "warning": "",
     "wiki_url": "http://github.com/kilbee/kbPIEs",
@@ -21,13 +21,13 @@ def avail_screens(self,context):
     Maximize Area - will toggle current area to maximum window size
     User Preferences - opens User Preferences window
     '''
-    screens = [     ('Maximize Area', 'Maximize Area', 'Maximizes current area'),
+    all_workspaces = [     ('Maximize Area', 'Maximize Area', 'Maximizes current area'),
                     ('User Preferences', 'User Preferences', 'User Preferences')
                 ] # (identifier, name, description) optionally: (.., icon name, unique number)
     
-    for i, screen in enumerate(bpy.data.screens):
-        screens.append((screen.name, screen.name, screen.name))
-    return screens
+    for i, workspace in enumerate(bpy.data.workspaces):
+        all_workspaces.append((workspace.name, workspace.name, workspace.name))
+    return all_workspaces
 
 
 addon_keymaps = [] # store hotkey items on addon level for quick referencel todo: actually move this to addon preferences to keep it clean
@@ -89,55 +89,55 @@ def get_addon_preferences():
 class KbPiesAddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
 
-    kb_pie_screens_top_left     = bpy.props.StringProperty( name="Top Left",     default="Maximize Area" )
-    kb_pie_screens_top          = bpy.props.StringProperty( name="Top",          default="Maximize Area" )
-    kb_pie_screens_top_right    = bpy.props.StringProperty( name="Top Right",    default="Maximize Area" )
+    kb_pie_screens_top_left     : bpy.props.StringProperty( name="Top Left",     default="Maximize Area" )
+    kb_pie_screens_top          : bpy.props.StringProperty( name="Top",          default="Maximize Area" )
+    kb_pie_screens_top_right    : bpy.props.StringProperty( name="Top Right",    default="Maximize Area" )
 
-    kb_pie_screens_left         = bpy.props.StringProperty( name="Left",         default="Maximize Area" )
-    kb_pie_screens_right        = bpy.props.StringProperty( name="Right",        default="Maximize Area" )
+    kb_pie_screens_left         : bpy.props.StringProperty( name="Left",         default="Maximize Area" )
+    kb_pie_screens_right        : bpy.props.StringProperty( name="Right",        default="Maximize Area" )
 
-    kb_pie_screens_bottom_left  = bpy.props.StringProperty( name="Bottom Left",  default="Maximize Area" )
-    kb_pie_screens_bottom       = bpy.props.StringProperty( name="Bottom",       default="Maximize Area" )
-    kb_pie_screens_bottom_right = bpy.props.StringProperty( name="Bottom Right", default="Maximize Area" )
+    kb_pie_screens_bottom_left  : bpy.props.StringProperty( name="Bottom Left",  default="Maximize Area" )
+    kb_pie_screens_bottom       : bpy.props.StringProperty( name="Bottom",       default="Maximize Area" )
+    kb_pie_screens_bottom_right : bpy.props.StringProperty( name="Bottom Right", default="Maximize Area" )
 
     def draw(self, context):
         layout = self.layout
         box = layout.box()
         col = box.column()        
         row = col.row()
-        row.label()
+        row.label(text="")
         #row.label()
         row.operator_menu_enum('kbpies.select_screen', 'top', text='Top ({})'.format(self.kb_pie_screens_top))
         #row.label()
-        row.label()
+        row.label(text="")
         
         row = col.row()
-        row.label()
+        row.label(text="")
         row.operator_menu_enum('kbpies.select_screen', 'top_left', text='Top Left ({})'.format(self.kb_pie_screens_top_left))
-        row.label()
+        row.label(text="")
         row.operator_menu_enum('kbpies.select_screen', 'top_right', text='Top Right ({})'.format(self.kb_pie_screens_top_right))
-        row.label()
+        row.label(text="")
 
         row = col.row()
         row.operator_menu_enum('kbpies.select_screen', 'left', text='Left ({})'.format(self.kb_pie_screens_left))
-        row.label()
-        row.label()
+        row.label(text="")
+        row.label(text="")
         row.operator_menu_enum('kbpies.select_screen', 'right', text='Right ({})'.format(self.kb_pie_screens_right))
         
         row = col.row()
-        row.label()
+        row.label(text="")
         row.operator_menu_enum('kbpies.select_screen', 'bottom_left', text='Bottom left ({})'.format(self.kb_pie_screens_bottom_left))
-        row.label()
+        row.label(text="")
         row.operator_menu_enum('kbpies.select_screen', 'bottom_right', text='Bottom Right ({})'.format(self.kb_pie_screens_bottom_right))
-        row.label()
+        row.label(text="")
         
         
         row = col.row()
-        row.label()
+        row.label(text="")
         #row.label()
         row.operator_menu_enum('kbpies.select_screen', 'bottom', text='Bottom ({})'.format(self.kb_pie_screens_bottom))
         #row.label()
-        row.label()
+        row.label(text="")
         
         
 
@@ -145,7 +145,7 @@ class KbPiesAddonPreferences(bpy.types.AddonPreferences):
         # hotkey section
         box = layout.box()
         col = box.column()        
-        col.label('Setup Hotkey')
+        col.label(text='Setup Hotkey')
         col.separator()
         wm = bpy.context.window_manager
         kc = wm.keyconfigs.user #need to reference the actual keyconfig, ( referencing kc = wm.keyconfigs.addon won't be saved across sessions)
@@ -157,7 +157,7 @@ class KbPiesAddonPreferences(bpy.types.AddonPreferences):
             col.separator()
             col.label(text="Hotkey also listed in User Preferences -> Input -> Window")
         else:
-            col.label("No hotkey entry found")
+            col.label(text="No hotkey entry found")
             col.operator(KbPiesAddHotkey.bl_idname, text = "Add hotkey entry", icon = 'ZOOMIN')
         #layout.separator()
         #layout.operator("wm.url_open", text="homepage & more info").url = "http://kilbeeu.wordpress.com"
@@ -179,16 +179,17 @@ class KbPiesSelectScreen(bpy.types.Operator):
     bl_label = "Select screen"
     num =  bpy.props.IntProperty()
 
-    top_left    = bpy.props.EnumProperty( name = "Top Left",    items = avail_screens, update=test)
-    left        = bpy.props.EnumProperty( name = "Left",        items = avail_screens)
-    bottom_left = bpy.props.EnumProperty( name = "Bottom Left", items = avail_screens)
+    #top_left    = bpy.props.EnumProperty( name = "Top Left",    items = avail_screens, update=test)
+    top_left    : bpy.props.EnumProperty( name = "Top Left",    items = avail_screens)
+    left        : bpy.props.EnumProperty( name = "Left",        items = avail_screens)
+    bottom_left : bpy.props.EnumProperty( name = "Bottom Left", items = avail_screens)
 
-    top         = bpy.props.EnumProperty( name = "Top",         items = avail_screens)
-    bottom      = bpy.props.EnumProperty( name = "Bottom",      items = avail_screens)
+    top         : bpy.props.EnumProperty( name = "Top",         items = avail_screens)
+    bottom      : bpy.props.EnumProperty( name = "Bottom",      items = avail_screens)
 
-    top_right   = bpy.props.EnumProperty( name = "Top Right",   items = avail_screens)
-    right       = bpy.props.EnumProperty( name = "Right",       items = avail_screens)
-    bottom_right= bpy.props.EnumProperty( name = "Bottom Right",items = avail_screens)
+    top_right   : bpy.props.EnumProperty( name = "Top Right",   items = avail_screens)
+    right       : bpy.props.EnumProperty( name = "Right",       items = avail_screens)
+    bottom_right: bpy.props.EnumProperty( name = "Bottom Right",items = avail_screens)
 
     
     def execute(self,context):
@@ -227,16 +228,16 @@ class KbPiesSwitchLayout(bpy.types.Menu):
         
         pie = self.layout.menu_pie()
         # Basic 4 direction PIE
-        pie.operator("screen.set_layout", left).layoutName = left
-        pie.operator("screen.set_layout", right).layoutName = right
-        pie.operator("screen.set_layout", bottom).layoutName = bottom
-        pie.operator("screen.set_layout", top).layoutName = top
+        pie.operator("screen.set_layout", text=left).layoutName = left
+        pie.operator("screen.set_layout", text=right).layoutName = right
+        pie.operator("screen.set_layout", text=bottom).layoutName = bottom
+        pie.operator("screen.set_layout", text=top).layoutName = top
 
         # Additional 4 directions PIE
-        pie.operator("screen.set_layout", top_left).layoutName = top_left
-        pie.operator("screen.set_layout", top_right).layoutName = top_right
-        pie.operator("screen.set_layout", bottom_left).layoutName = bottom_left
-        pie.operator("screen.set_layout", bottom_right).layoutName = bottom_right
+        pie.operator("screen.set_layout", text=top_left).layoutName = top_left
+        pie.operator("screen.set_layout", text=top_right).layoutName = top_right
+        pie.operator("screen.set_layout", text=bottom_left).layoutName = bottom_left
+        pie.operator("screen.set_layout", text=bottom_right).layoutName = bottom_right
 
 
 
@@ -246,7 +247,7 @@ class KbPiesSetScreenLayout(bpy.types.Operator):
     ''' Change screen layout '''
     bl_idname="screen.set_layout"
     bl_label="Switch to Screen Layout"
-    layoutName=bpy.props.StringProperty()   
+    layoutName : bpy.props.StringProperty()   
     
     def execute(self,context):
         if self.layoutName == "Maximize Area":  # if just want to MAXIMIZE area then do so:
@@ -260,7 +261,7 @@ class KbPiesSetScreenLayout(bpy.types.Operator):
             try:
                 if bpy.context.window.screen.show_fullscreen:
                     bpy.ops.screen.back_to_previous() # if area is maximized back to previous layout before switching it (avoids some crashes)
-                bpy.context.window.screen=bpy.data.screens[self.layoutName] # try to switch layout
+                bpy.context.window.workspace=bpy.data.workspaces[self.layoutName] # try to switch layout
             except:
                 # except layout doesn't exists
                 self.report({'INFO'}, 'Screen layout [{}] doesn\'t exist! Create it or pick another in addon settings.'.format(self.layoutName))
