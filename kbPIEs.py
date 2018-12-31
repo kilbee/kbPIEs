@@ -47,8 +47,8 @@ def get_hotkey_entry_item(km, kmi_name, kmi_value):
 
 def add_hotkey():
     # reference: http://blender.stackexchange.com/a/1498/1610
-    user_preferences = bpy.context.user_preferences
-    addon_prefs = user_preferences.addons[__name__].preferences
+    preferences = bpy.context.preferences
+    addon_prefs = preferences.addons[__name__].preferences
     
     wm = bpy.context.window_manager
     #kc = wm.keyconfigs.user      # for adding hotkeys independent from addon
@@ -80,7 +80,7 @@ def remove_hotkey():
 
 def get_addon_preferences():
     ''' quick wrapper for referencing addon preferences '''
-    addon_preferences = bpy.context.user_preferences.addons[__name__].preferences
+    addon_preferences = bpy.context.preferences.addons[__name__].preferences
     return addon_preferences
 
 
@@ -255,7 +255,7 @@ class KbPiesSetScreenLayout(bpy.types.Operator):
             return{'FINISHED'}
         elif self.layoutName == "User Preferences":
             bpy.ops.screen.userpref_show('INVOKE_DEFAULT')
-            #bpy.context.user_preferences.active_section = 'ADDONS'
+            #bpy.context.preferences.active_section = 'ADDONS'
             return{'FINISHED'}
         else:
             try:
